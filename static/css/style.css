@@ -26,20 +26,20 @@ body {
    CORES PRINCIPAIS (Variáveis)
    ================================================ */
 :root {
-    --primary-dark: #1a3a5c;
-    --primary-medium: #2c5a8c;
+    --primary-dark: #153D64;
+    --primary-medium: #215C98;
     --primary-light: #eef3fc;
-    --secondary-bg: #eef3fc;
-    --danger: #dc2626;
-    --danger-gradient: linear-gradient(90deg, #dc2626 0%, #fef2f2 100%);
-    --success: #059669;
-    --success-gradient: linear-gradient(90deg, #059669 0%, #ecfdf5 100%);
+    --danger: #FF3F3F;
+    --danger-gradient: linear-gradient(90deg, #FF3F3F 80%, #ffffff 100%);
+    --success: #8ED973;
+    --success-gradient: linear-gradient(90deg, #8ED973 80%, #ffffff 100%);
     --border-light: #000000;
     --border-medium: #000000;
-    --text-dark: #000000;
-    --text-gray: #333333;
-    --text-light: #666666;
+    --text-dark: #1e293b;
+    --text-gray: #64748b;
+    --text-light: #94a3b8;
     --hover-bg: #f8fafc;
+    --page-bg: #f4f6fa;
 }
 
 /* ================================================
@@ -47,8 +47,8 @@ body {
    ================================================ */
 .top-frame {
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     margin-bottom: 28px;
     overflow: hidden;
     border: 1px solid #000000;
@@ -112,7 +112,7 @@ body {
     background: var(--primary-dark);
     color: white;
     border-color: #000000;
-    box-shadow: 0 2px 4px rgba(26,58,92,0.2);
+    box-shadow: 0 2px 4px rgba(21,61,100,0.2);
 }
 
 /* ================================================
@@ -120,30 +120,26 @@ body {
    ================================================ */
 .tributacao-section {
     background: white;
-    border-radius: 10px;
+    border-radius: 12px;
     margin-bottom: 28px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     overflow: hidden;
     border: 1px solid #000000;
-    transition: box-shadow 0.2s ease;
 }
 
-.tributacao-section:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
+/* TÍTULO DO QUADRO - AZUL NO FUNDO BRANCO */
 .section-header {
-    background: var(--primary-dark);
-    padding: 14px 24px;
+    padding: 16px 20px 8px 20px;
+    background: white;
     border-bottom: 1px solid #000000;
 }
 
 .section-header h2 {
-    color: white;
-    font-size: 1.15em;
-    font-weight: 500;
+    color: var(--primary-dark);
+    font-size: 1.2em;
+    font-weight: 600;
     margin: 0;
-    letter-spacing: 0.3px;
+    letter-spacing: -0.3px;
 }
 
 /* SCROLL HORIZONTAL */
@@ -183,17 +179,17 @@ body {
     background: white;
 }
 
-/* 🔥 LINHA DA DATA (CABEÇALHO) - AZUL ESCURO COM NEGRITO */
+/* CABEÇALHO DA DATA - COR #153D64 */
 .dashboard-table th {
     background: var(--primary-dark) !important;
     color: white !important;
-    padding: 14px 16px;
+    padding: 12px 16px;
     text-align: center;
-    font-weight: 700 !important;
+    font-weight: 600;
     white-space: nowrap;
     font-size: 0.85em;
     border: 1px solid #000000;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
 .dashboard-table th:first-child {
@@ -204,8 +200,9 @@ body {
     z-index: 10;
 }
 
+/* CÉLULAS COM BORDAS PRETAS */
 .dashboard-table td {
-    padding: 12px 16px;
+    padding: 10px 16px;
     text-align: right;
     border: 1px solid #000000;
     white-space: nowrap;
@@ -220,6 +217,7 @@ body {
     position: sticky;
     left: 0;
     z-index: 5;
+    border: 1px solid #000000;
 }
 
 /* Hover suave nas linhas */
@@ -228,68 +226,70 @@ body {
 }
 
 /* ================================================
-   LINHA TOTAL - DESTAQUE MAIS FORTE
+   LINHA TOTAL - COR #215C98 COM FONTE BRANCA
    ================================================ */
 .linha-total td {
-    background: #c5d9f0 !important;
-    font-weight: 700 !important;
-    color: var(--text-dark) !important;
-    border-color: #000000 !important;
+    background: var(--primary-medium) !important;
+    font-weight: 600 !important;
+    color: white !important;
+    border: 1px solid #000000 !important;
 }
 
 .linha-total td:first-child {
-    background: #c5d9f0 !important;
-    font-weight: 700 !important;
+    background: var(--primary-medium) !important;
+    font-weight: 600 !important;
+    color: white !important;
 }
 
 .linha-total:hover td {
-    background: #b8cce4 !important;
+    background: #1e5288 !important;
 }
 
 .linha-total .clickable {
     text-decoration: none !important;
-    font-weight: 700 !important;
-    color: var(--text-dark) !important;
+    font-weight: 600 !important;
+    color: white !important;
 }
 
 .linha-total .clickable:hover {
     background: transparent !important;
     text-decoration: underline !important;
     text-decoration-style: solid !important;
-    text-decoration-color: var(--primary-medium) !important;
+    text-decoration-color: white !important;
     text-underline-offset: 3px;
 }
 
 /* ================================================
-   LINHA TRIBUTAÇÃO - DESTAQUE MAIS FORTE
+   LINHA TRIBUTAÇÃO - COR #215C98 COM FONTE BRANCA
    ================================================ */
 .linha-tributacao td {
-    background: #dce6f0 !important;
+    background: var(--primary-medium) !important;
     font-weight: 600 !important;
-    color: var(--text-dark) !important;
-    border-color: #000000 !important;
+    color: white !important;
+    border: 1px solid #000000 !important;
 }
 
 .linha-tributacao td:first-child {
-    background: #dce6f0 !important;
+    background: var(--primary-medium) !important;
     font-weight: 600 !important;
+    color: white !important;
 }
 
 .linha-tributacao:hover td {
-    background: #d0dbe8 !important;
+    background: #1e5288 !important;
 }
 
 .linha-tributacao .clickable {
     text-decoration: none !important;
     font-weight: 600 !important;
-    color: var(--text-dark) !important;
+    color: white !important;
 }
 
 .linha-tributacao .clickable:hover {
     background: transparent !important;
     text-decoration: underline !important;
     text-decoration-style: solid !important;
-    text-decoration-color: var(--primary-medium) !important;
+    text-decoration-color: white !important;
     text-underline-offset: 3px;
 }
 
@@ -318,7 +318,7 @@ body {
 }
 
 /* ================================================
-   BARRAS DE PERCENTUAL - FINAS COM GRADIENTE
+   BARRAS DE PERCENTUAL
    ================================================ */
 .percent-wrapper {
     position: relative;
@@ -335,27 +335,26 @@ body {
     color: var(--text-dark);
 }
 
-/* 🔥 BARRAS MAIS FINAS (altura reduzida) E COM GRADIENTE */
 .percent-bar-bg {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     left: 0;
-    width: calc(var(--bar-width, 0%) - 8px);
-    height: 15px;
+    width: var(--bar-width, 0%);
+    height: 6px;
     z-index: 1;
-    border-radius: 4px;
+    border-radius: 3px;
     transition: width 0.3s ease;
 }
 
-/* Gradiente Vermelho para % Pendente */
+/* Gradiente Vermelho #FF3F3F 80% para branco */
 .bar-danger {
-    background: linear-gradient(90deg, #dc2626 0%, #fef2f2 100%);
+    background: linear-gradient(90deg, #FF3F3F 80%, #ffffff 100%);
 }
 
-/* Gradiente Verde para % Concluído */
+/* Gradiente Verde #8ED973 80% para branco */
 .bar-success {
-    background: linear-gradient(90deg, #059669 0%, #ecfdf5 100%);
+    background: linear-gradient(90deg, #8ED973 80%, #ffffff 100%);
 }
 
 /* Esconde a borda da célula de percentual para a barra ficar contínua */
@@ -365,18 +364,33 @@ body {
 }
 
 .percent-wrapper {
-    padding: 12px 16px;
+    padding: 10px 16px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    min-height: 44px;
+    min-height: 40px;
+}
+
+/* ================================================
+   🔥 LINHA SEPARADORA - COR DO FUNDO DA PÁGINA
+   ================================================ */
+.separator-row td {
+    background: var(--page-bg) !important;
+    border: none !important;
+    height: 12px;
+    padding: 0 !important;
+}
+
+.separator-row td:first-child {
+    background: var(--page-bg) !important;
+    border: none !important;
 }
 
 /* ================================================
    VARIAÇÃO (seta verde)
    ================================================ */
 .variation {
-    color: var(--success);
+    color: #8ED973;
     font-weight: 600;
     margin-right: 5px;
     font-size: 0.8em;
@@ -386,7 +400,7 @@ body {
 }
 
 /* ================================================
-   MODAL - Design simplificado
+   MODAL
    ================================================ */
 .modal {
     display: none;
@@ -407,7 +421,7 @@ body {
     width: 90%;
     max-width: 1200px;
     max-height: 85vh;
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     animation: slideIn 0.25s ease;
@@ -422,7 +436,7 @@ body {
     justify-content: space-between;
     align-items: center;
     background: var(--primary-dark);
-    border-radius: 10px 10px 0 0;
+    border-radius: 12px 12px 0 0;
 }
 
 .modal-header h2 {
@@ -467,7 +481,7 @@ body {
 
 #modalTable th {
     background: #f8fafc;
-    color: #000000;
+    color: #1e293b;
     padding: 12px 14px;
     text-align: left;
     font-weight: 600;
@@ -484,7 +498,7 @@ body {
     padding: 10px 14px;
     border-bottom: 1px solid #000000;
     border-right: 1px solid #000000;
-    color: #000000;
+    color: #1e293b;
 }
 
 #modalTable td:last-child {
@@ -556,14 +570,70 @@ body {
     
     .dashboard-table td,
     .dashboard-table th {
-        padding: 10px 12px;
+        padding: 8px 12px;
     }
     
     .section-header {
-        padding: 10px 16px;
+        padding: 12px 16px 6px 16px;
     }
     
     .section-header h2 {
         font-size: 1em;
     }
+}
+
+/* ================================================
+   MODAL - BARRA DE PESQUISA E BOTÃO EXPORTAR
+   ================================================ */
+.modal-search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid #000000;
+    border-radius: 8px;
+    font-size: 0.85em;
+    outline: none;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-input:focus {
+    border-color: var(--primary-medium);
+    box-shadow: 0 0 0 2px rgba(33,92,152,0.1);
+}
+
+.export-btn {
+    padding: 10px 20px;
+    background: var(--primary-medium);
+    color: white;
+    border: 1px solid #000000;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.export-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+/* Destaque para linhas filtradas */
+.modal-table-row {
+    transition: background 0.15s ease;
+}
+
+.modal-table-row.hidden {
+    display: none;
 }

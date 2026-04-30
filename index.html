@@ -40,10 +40,15 @@
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📋 Detalhe</h2>
+                <h2>📋 Detalhe das Pendências</h2>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- Barra de pesquisa -->
+                <div class="modal-search-bar">
+                    <input type="text" id="modalSearchInput" placeholder="🔍 Pesquisar por cliente, ID, grupo, gerente..." class="search-input">
+                    <button id="exportExcelBtn" class="export-btn">📎 Exportar Excel</button>
+                </div>
                 <div class="table-wrapper">
                     <table id="modalTable">
                         <thead>

@@ -20,12 +20,20 @@ const MAPA_UNIDADE = {
 };
 
 // ================================================
+// VARIÁVEIS GLOBAIS DO MODAL
+// ================================================
+let currentModalData = [];
+let currentFilterType = 'all';
+let currentFilterDate = null;
+let currentContexto = '';
+
+// ================================================
 // DATAS
 // ================================================
 function getDiasUteisAbril2026() {
     const dias = [];
     for (let i = 1; i <= 30; i++) {
-        const d = new Date(2026, 3, i);
+        const d = new Date(2026, 4, i);
         if (d.getDay() !== 0 && d.getDay() !== 6) dias.push(d);
     }
     return dias;
@@ -170,14 +178,18 @@ function calcularEvolucao(base, dias, campo) {
 }
 
 function calcularDocumentacao(base, dias) {
-    const total = base.length;
+    // Filtra apenas tarefas com Documentação NÃO "Recebida"
+    const baseComDocPendente = base.filter(r => {
+        const status = String(r.Documentacao || '').trim().toLowerCase();
+        return status !== 'recebida';
+    });
+    
+    const total = baseComDocPendente.length;
     let pendente = total;
     const resultado = [total];
 
     dias.forEach(dia => {
-        const baixados = base.filter(r => {
-            const status = String(r.Documentacao || '').trim().toLowerCase();
-            if (status !== 'recebida') return false;
+        const baixados = baseComDocPendente.filter(r => {
             const data = extrairData(r.DataDocumentacao);
             return data && isMesmaData(data, dia);
         }).length;
@@ -190,12 +202,14 @@ function calcularDocumentacao(base, dias) {
 }
 
 function calcularPendenciaOperacaoReal(base, dias) {
-    const pendImportacao = calcularEvolucao(base, dias, 'DataImportacao');
-    const pendDoc = calcularDocumentacao(base, dias);
-    return pendImportacao.map((v, i) => {
-        const resultado = v - pendDoc[i];
-        return resultado < 0 ? 0 : resultado;
+    // Filtra apenas tarefas com Documentação "Recebida"
+    const baseComDocRecebida = base.filter(r => {
+        const status = String(r.Documentacao || '').trim().toLowerCase();
+        return status === 'recebida';
     });
+    
+    const pendImportacao = calcularEvolucao(baseComDocRecebida, dias, 'DataImportacao');
+    return pendImportacao;
 }
 
 function calcularPercentual(base, dias) {
@@ -238,67 +252,173 @@ function gerarTextoVariacao(valorAtual, valorAnterior) {
 }
 
 // ================================================
-// MODAL - FUNÇÃO GLOBAL
+// MODAL - FUNÇÕES
 // ================================================
-window.abrirModal = function(base, data, contexto = '') {
-    console.log("🔍 abrirModal chamada!", { baseLength: base.length, data, contexto });
+function renderModalTable(dataList) {
+    const tbody = document.getElementById('modalTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (dataList.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="7" style="text-align: center; padding: 40px;">Nenhuma pendência encontrada</td>';
+        tbody.appendChild(tr);
+        return;
+    }
+    
+    dataList.forEach((r, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'modal-table-row';
+        tr.setAttribute('data-index', index);
+        tr.innerHTML = `
+            <td>${r.IdCliente || '-'}</td>
+            <td>${r.Cliente || '-'}</td>
+            <td>${r.Grupo || '-'}</td>
+            <td>${r.Gerente || '-'}</td>
+            <td>${r.Tributacao || '-'}</td>
+            <td>${r.EquipeAtendimento || '-'}</td>
+            <td>${r.Segmento || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function abrirModal(base, data, contexto = '', tipoFiltro = 'all') {
+    console.log("🔍 abrirModal chamada!", { baseLength: base.length, data, contexto, tipoFiltro });
     
     let lista = [];
+    
+    // Primeiro aplica o filtro de data (se houver)
+    let baseFiltrada = base;
     if (data) {
-        lista = base.filter(r => {
+        baseFiltrada = base.filter(r => {
             const dataImportacao = extrairData(r.DataImportacao);
             return !dataImportacao || dataImportacao > data;
         });
-    } else {
-        lista = [...base];
     }
     
-    console.log("📋 Lista filtrada:", lista.length);
+    if (tipoFiltro === 'doc') {
+        // Pendência de DOC: Documentação NÃO é "Recebida"
+        lista = baseFiltrada.filter(r => {
+            const status = String(r.Documentacao || '').trim().toLowerCase();
+            return status !== 'recebida';
+        });
+    } 
+    else if (tipoFiltro === 'op') {
+        // Pendência de OP: Documentação É "Recebida"
+        lista = baseFiltrada.filter(r => {
+            const status = String(r.Documentacao || '').trim().toLowerCase();
+            return status === 'recebida';
+        });
+    }
+    else {
+        // Filtro padrão (todas pendências)
+        lista = baseFiltrada;
+    }
+    
+    console.log(`📋 Lista filtrada (${tipoFiltro}):`, lista.length);
+    
+    // Armazena dados globais para pesquisa e exportação
+    currentModalData = lista;
+    currentFilterType = tipoFiltro;
+    currentFilterDate = data;
+    currentContexto = contexto;
+    
+    // Atualiza título do modal baseado no filtro
+    const modalTitle = document.querySelector('#modal .modal-header h2');
+    if (modalTitle) {
+        let titleText = '📋 Detalhe das Pendências';
+        if (tipoFiltro === 'doc') titleText = '📄 Pendências de Documentação';
+        if (tipoFiltro === 'op') titleText = '⚙️ Pendências de Operação (OP)';
+        modalTitle.textContent = titleText;
+    }
+    
+    // Atualiza a tabela
+    renderModalTable(lista);
+    
+    // Limpa e reseta a pesquisa
+    const searchInput = document.getElementById('modalSearchInput');
+    if (searchInput) searchInput.value = '';
     
     const modal = document.getElementById('modal');
-    const modalQuantidade = document.getElementById('modalQuantidade');
-    const modalData = document.getElementById('modalData');
-    const modalTableBody = document.getElementById('modalTableBody');
-    
-    if (modalQuantidade) modalQuantidade.textContent = lista.length;
-    if (modalData) modalData.textContent = data ? formatarData(data) : 'Início';
-    
-    if (modalTableBody) {
-        modalTableBody.innerHTML = '';
-        
-        if (lista.length === 0) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = '<td colspan="7" style="text-align: center;">Nenhuma pendência encontrada</td>';
-            modalTableBody.appendChild(tr);
-        } else {
-            lista.forEach(r => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${r.IdCliente || '-'}</td>
-                    <td>${r.Cliente || '-'}</td>
-                    <td>${r.Grupo || '-'}</td>
-                    <td>${r.Gerente || '-'}</td>
-                    <td>${r.Tributacao || '-'}</td>
-                    <td>${r.EquipeAtendimento || '-'}</td>
-                    <td>${r.Segmento || '-'}</td>
-                `;
-                modalTableBody.appendChild(tr);
-            });
-        }
-    }
-    
     if (modal) {
         modal.style.display = 'block';
         console.log("✅ Modal aberto com sucesso!");
-    } else {
-        console.error("❌ Elemento modal não encontrado no DOM!");
     }
-};
+}
+
+function setupModalSearch() {
+    const searchInput = document.getElementById('modalSearchInput');
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#modalTableBody .modal-table-row');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (searchTerm === '' || text.includes(searchTerm)) {
+                row.classList.remove('hidden');
+            } else {
+                row.classList.add('hidden');
+            }
+        });
+        
+        const visibleRows = document.querySelectorAll('#modalTableBody .modal-table-row:not(.hidden)');
+        const noResultsMsg = document.getElementById('noResultsMsg');
+        
+        if (visibleRows.length === 0 && searchTerm !== '') {
+            if (!noResultsMsg) {
+                const tbody = document.getElementById('modalTableBody');
+                const msgRow = document.createElement('tr');
+                msgRow.id = 'noResultsMsg';
+                msgRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 40px;">🔍 Nenhum resultado encontrado para "' + searchTerm + '"</td>';
+                tbody.appendChild(msgRow);
+            }
+        } else {
+            const msgRow = document.getElementById('noResultsMsg');
+            if (msgRow) msgRow.remove();
+        }
+    });
+}
+
+function exportToExcel() {
+    if (!currentModalData || currentModalData.length === 0) {
+        alert('Nenhum dado para exportar!');
+        return;
+    }
+    
+    const exportData = currentModalData.map(r => ({
+        'ID Cliente': r.IdCliente || '-',
+        'Cliente': r.Cliente || '-',
+        'Grupo': r.Grupo || '-',
+        'Gerente': r.Gerente || '-',
+        'Tributação': r.Tributacao || '-',
+        'Equipe': r.EquipeAtendimento || '-',
+        'Segmento': r.Segmento || '-',
+        'Data Importação': r.DataImportacao ? formatarData(extrairData(r.DataImportacao)) : '-',
+        'Documentação': r.Documentacao || '-',
+        'Status DOC': r.Documentacao === 'Recebida' ? 'Recebida' : 'Pendente'
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const colWidths = [
+        {wch:12}, {wch:30}, {wch:15}, {wch:15}, {wch:15}, {wch:15}, {wch:12}, {wch:15}, {wch:12}, {wch:12}
+    ];
+    ws['!cols'] = colWidths;
+    
+    const wb = XLSX.utils.book_new();
+    const sheetName = `Pendencias_${currentFilterType}_${new Date().toISOString().slice(0,19)}`;
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    
+    XLSX.writeFile(wb, `pendencias_${currentFilterType}_${currentFilterDate ? formatarData(currentFilterDate) : 'inicio'}.xlsx`);
+}
 
 // ================================================
 // CRIAÇÃO DE LINHAS
 // ================================================
-function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTributacao = false) {
+function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTributacao = false, tipoModal = 'all') {
     const tr = document.createElement('tr');
 
     const tdNome = document.createElement('td');
@@ -328,11 +448,24 @@ function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTr
             td.textContent = valorDisplay;
         }
 
-        // Usar window.abrirModal para garantir que encontra a função
+        // Define qual base passar para o modal baseado no tipo
+        let baseParaModal = base;
+        if (tipoModal === 'doc') {
+            baseParaModal = base.filter(r => {
+                const status = String(r.Documentacao || '').trim().toLowerCase();
+                return status !== 'recebida';
+            });
+        } else if (tipoModal === 'op') {
+            baseParaModal = base.filter(r => {
+                const status = String(r.Documentacao || '').trim().toLowerCase();
+                return status === 'recebida';
+            });
+        }
+        
         td.onclick = (e) => {
             e.stopPropagation();
             const dataSelecionada = i === 0 ? null : dias[i - 1];
-            window.abrirModal(base, dataSelecionada, nome);
+            window.abrirModal(baseParaModal, dataSelecionada, nome, tipoModal);
         };
 
         tr.appendChild(td);
@@ -341,7 +474,6 @@ function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTr
     return tr;
 }
 
-// 🔥 LINHA DE PERCENTUAL COM BARRA FINA E GRADIENTE
 function criarLinhaPercentual(nome, valores, tipo) {
     const tr = document.createElement('tr');
     
@@ -360,26 +492,26 @@ function criarLinhaPercentual(nome, valores, tipo) {
         wrapper.style.display = 'flex';
         wrapper.style.alignItems = 'center';
         wrapper.style.justifyContent = 'flex-end';
-        wrapper.style.padding = '12px 16px 12px 48px';
-        wrapper.style.minHeight = '44px';
+        wrapper.style.padding = '10px 16px';
+        wrapper.style.minHeight = '60px';
         
         const barBg = document.createElement('div');
         barBg.className = `percent-bar-bg ${tipo === 'danger' ? 'bar-danger' : 'bar-success'}`;
         const percentValue = Math.min(Math.round(v), 100);
-        barBg.style.width = `calc(${percentValue}% - 4px)`;
+        barBg.style.width = `${percentValue}%`;
         barBg.style.position = 'absolute';
         barBg.style.top = '50%';
         barBg.style.transform = 'translateY(-50%)';
         barBg.style.left = '0';
-        barBg.style.height = '30px';
-        barBg.style.borderRadius = '4px';
+        barBg.style.height = '40px';
+        barBg.style.borderRadius = '3px';
         
         const valueSpan = document.createElement('span');
         valueSpan.className = 'percent-value';
         valueSpan.style.position = 'relative';
         valueSpan.style.zIndex = '2';
         valueSpan.style.fontWeight = '700';
-        valueSpan.style.fontSize = '0.85em';
+        valueSpan.style.fontSize = '0.9em';
         valueSpan.style.color = '#000000';
         valueSpan.textContent = formatarPercentual(v);
         
@@ -426,7 +558,7 @@ function criarBloco(nomeGrupo, dados, dias) {
     const tbody = document.createElement('tbody');
 
     // TOTAL
-    const totalLinha = criarLinha('▶ Total', calcularEvolucao(dados, dias, 'DataImportacao'), dados, dias, false, true);
+    const totalLinha = criarLinha('▶ Total', calcularEvolucao(dados, dias, 'DataImportacao'), dados, dias, false, true, 'all');
     totalLinha.classList.add('linha-total');
     tbody.appendChild(totalLinha);
 
@@ -442,26 +574,30 @@ function criarBloco(nomeGrupo, dados, dias) {
     totalLinha.onclick = () => {
         expandidoTotal = !expandidoTotal;
         totalLinha.children[0].textContent = expandidoTotal ? '▼ Total' : '▶ Total';
-        tbody.querySelectorAll('.nivel1, .nivel2').forEach(e => e.remove());
+        
+        tbody.querySelectorAll('.nivel1, .nivel2, .separator-row').forEach(e => e.remove());
+        
         if (!expandidoTotal) return;
 
         TRIBUTACOES.forEach(trib => {
             const base = dados.filter(d => d.Tributacao === trib);
             if (base.length === 0) return;
 
-            const linhaTrib = criarLinha(`▶ ${trib}`, calcularEvolucao(base, dias, 'DataImportacao'), base, dias, false, true);
+            const linhaTrib = criarLinha(`▶ ${trib}`, calcularEvolucao(base, dias, 'DataImportacao'), base, dias, false, true, 'all');
             linhaTrib.classList.add('linha-tributacao', 'nivel1');
 
             let expandidoTrib = false;
             linhaTrib.onclick = () => {
                 expandidoTrib = !expandidoTrib;
                 linhaTrib.children[0].textContent = expandidoTrib ? `▼ ${trib}` : `▶ ${trib}`;
+                
                 let next = linhaTrib.nextSibling;
-                while (next && next.classList.contains('nivel2')) {
+                while (next && (next.classList.contains('nivel2') || next.classList.contains('separator-row'))) {
                     const temp = next;
                     next = next.nextSibling;
                     temp.remove();
                 }
+                
                 if (!expandidoTrib) return;
 
                 const doc = calcularDocumentacao(base, dias);
@@ -469,8 +605,8 @@ function criarBloco(nomeGrupo, dados, dias) {
                 const percTrib = calcularPercentual(base, dias);
 
                 const linhas = [
-                    criarLinha('Doc Pendente', doc, base, dias, false, false),
-                    criarLinha('Pendência OP', op, base, dias, false, false),
+                    criarLinha('Doc Pendente', doc, base, dias, false, false, 'doc'),
+                    criarLinha('Pendência OP', op, base, dias, false, false, 'op'),
                     criarLinhaPercentual('% Pendente', percTrib.pend, 'danger'),
                     criarLinhaPercentual('% Concluído', percTrib.conc, 'success')
                 ];
@@ -482,7 +618,20 @@ function criarBloco(nomeGrupo, dados, dias) {
                     referencia.parentNode.insertBefore(l, referencia.nextSibling);
                     referencia = l;
                 });
+                
+                // Adiciona linha separadora
+                const separatorRow = document.createElement('tr');
+                separatorRow.classList.add('separator-row', 'nivel2');
+                const tdSeparator = document.createElement('td');
+                tdSeparator.setAttribute('colspan', dias.length + 2);
+                tdSeparator.style.padding = '0';
+                tdSeparator.style.height = '12px';
+                tdSeparator.style.backgroundColor = '#f4f6fa';
+                tdSeparator.style.border = 'none';
+                separatorRow.appendChild(tdSeparator);
+                referencia.parentNode.insertBefore(separatorRow, referencia.nextSibling);
             };
+            
             tbody.insertBefore(linhaTrib, linhaPercPend);
         });
     };
@@ -545,6 +694,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // Configurar pesquisa no modal
+    setupModalSearch();
+
+    // Configurar botão de exportar Excel
+    const exportBtn = document.getElementById('exportExcelBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportToExcel);
+    }
+
     // FECHAR MODAL
     const closeModalBtn = document.querySelector('.close-modal');
     const modal = document.getElementById('modal');
@@ -561,5 +719,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
     
-    console.log("✅ Dashboard inicializado. Função abrirModal disponível:", typeof window.abrirModal);
+    console.log("✅ Dashboard inicializado");
 });
