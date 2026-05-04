@@ -123,7 +123,8 @@ function normalizar(dados) {
             if (key.includes('tribut')) n.Tributacao = r[k];
             else if (key.includes('import')) n.DataImportacao = r[k];
             else if (key.includes('datadocumentacao')) n.DataDocumentacao = r[k];
-            else if (key.includes('documentacao')) n.Documentacao = r[k];
+            else if (key.includes('statusdocumentacao')) n.Documentacao = r[k];
+            else if (key.includes('documentacaopendente')) n.DocumentacaoPendente = r[k];
             else if (key.includes('unidade')) n.Unidade = r[k];
             else if (key.includes('segmento')) n.Segmento = r[k];
             else if (key.includes('id') && key.includes('cliente')) n.IdCliente = r[k];
@@ -279,6 +280,7 @@ function renderModalTable(dataList) {
             <td>${r.Tributacao || '-'}</td>
             <td>${r.EquipeAtendimento || '-'}</td>
             <td>${r.Segmento || '-'}</td>
+            <td>${r.DocumentacaoPendente || '-'}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -329,8 +331,8 @@ function abrirModal(base, data, contexto = '', tipoFiltro = 'all') {
     const modalTitle = document.querySelector('#modal .modal-header h2');
     if (modalTitle) {
         let titleText = '📋 Detalhe das Pendências';
-        if (tipoFiltro === 'doc') titleText = '📄 Pendências de Documentação';
-        if (tipoFiltro === 'op') titleText = '⚙️ Pendências de Operação (OP)';
+        if (tipoFiltro === 'doc') titleText = 'Pendências de Documentação';
+        if (tipoFiltro === 'op') titleText = 'Pendências de Operação';
         modalTitle.textContent = titleText;
     }
     
@@ -614,14 +616,14 @@ function criarBloco(nomeGrupo, dados, dias) {
     const tbody = document.createElement('tbody');
 
     // TOTAL
-    const totalLinha = criarLinha('▶ Total', calcularEvolucao(dados, dias, 'DataImportacao'), dados, dias, false, true, 'all');
+    const totalLinha = criarLinha('+ Total', calcularEvolucao(dados, dias, 'DataImportacao'), dados, dias, false, true, 'all');
     totalLinha.classList.add('linha-total');
     tbody.appendChild(totalLinha);
 
     // PERCENTUAIS COM BARRAS
     const perc = calcularPercentual(dados, dias);
     const linhaPercPend = criarLinhaPercentual('% Pendente', perc.pend, 'danger', dias);
-    const linhaPercConc = criarLinhaPercentual('% Pendente', perc.conc, 'success', dias);
+    const linhaPercConc = criarLinhaPercentual('% Concluída', perc.conc, 'success', dias);
     tbody.appendChild(linhaPercPend);
     tbody.appendChild(linhaPercConc);
 
@@ -629,7 +631,7 @@ function criarBloco(nomeGrupo, dados, dias) {
     let expandidoTotal = false;
     totalLinha.onclick = () => {
         expandidoTotal = !expandidoTotal;
-        totalLinha.children[0].textContent = expandidoTotal ? '▼ Total' : '▶ Total';
+        totalLinha.children[0].textContent = expandidoTotal ? '- Total' : '+ Total';
         
         tbody.querySelectorAll('.nivel1, .nivel2, .separator-row').forEach(e => e.remove());
         
@@ -639,13 +641,13 @@ function criarBloco(nomeGrupo, dados, dias) {
             const base = dados.filter(d => d.Tributacao === trib);
             if (base.length === 0) return;
 
-            const linhaTrib = criarLinha(`▶ ${trib}`, calcularEvolucao(base, dias, 'DataImportacao'), base, dias, false, true, 'all');
+            const linhaTrib = criarLinha(`+ ${trib}`, calcularEvolucao(base, dias, 'DataImportacao'), base, dias, false, true, 'all');
             linhaTrib.classList.add('linha-tributacao', 'nivel1');
 
             let expandidoTrib = false;
             linhaTrib.onclick = () => {
                 expandidoTrib = !expandidoTrib;
-                linhaTrib.children[0].textContent = expandidoTrib ? `▼ ${trib}` : `▶ ${trib}`;
+                linhaTrib.children[0].textContent = expandidoTrib ? `- ${trib}` : `+ ${trib}`;
                 
                 let next = linhaTrib.nextSibling;
                 while (next && (next.classList.contains('nivel2') || next.classList.contains('separator-row'))) {
