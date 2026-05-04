@@ -428,17 +428,37 @@ function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTr
     valores.forEach((v, i) => {
         const td = document.createElement('td');
         td.className = 'clickable';
-        
-        let valorDisplay = '';
-        if (isPercentual) {
-            valorDisplay = formatarPercentual(v);
-        } else {
-            valorDisplay = Math.round(v);
+
+        // 🔎 Define data da coluna
+        const dataColuna = i === 0 ? null : dias[i - 1];
+
+        // 🧠 Verifica se é data futura
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        let futura = false;
+        if (dataColuna) {
+            const d = new Date(dataColuna);
+            d.setHours(0, 0, 0, 0);
+            futura = d > hoje;
         }
-        
-        if (isTotalOuTributacao && i > 0 && !isPercentual) {
+
+        // 🎯 Define valor a exibir
+        let valorDisplay = '';
+
+        if (!futura) {
+            if (isPercentual) {
+                valorDisplay = formatarPercentual(v);
+            } else {
+                valorDisplay = Math.round(v);
+            }
+        }
+
+        // 🔢 Variação (apenas se não for futura)
+        if (!futura && isTotalOuTributacao && i > 0 && !isPercentual) {
             const valorAnterior = valores[i - 1];
             const textoVariacao = gerarTextoVariacao(v, valorAnterior);
+
             if (textoVariacao) {
                 td.innerHTML = `${textoVariacao}${valorDisplay}`;
             } else {
@@ -448,7 +468,9 @@ function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTr
             td.textContent = valorDisplay;
         }
 
-        // Define qual base passar para o modal baseado no tipo
+
+
+        // 📊 Define base para modal
         let baseParaModal = base;
         if (tipoModal === 'doc') {
             baseParaModal = base.filter(r => {
@@ -461,12 +483,15 @@ function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTr
                 return status === 'recebida';
             });
         }
-        
-        td.onclick = (e) => {
-            e.stopPropagation();
-            const dataSelecionada = i === 0 ? null : dias[i - 1];
-            window.abrirModal(baseParaModal, dataSelecionada, nome, tipoModal);
-        };
+
+        // 🖱️ Evento de clique (somente se NÃO for futura)
+        if (!futura) {
+            td.onclick = (e) => {
+                e.stopPropagation();
+                const dataSelecionada = i === 0 ? null : dias[i - 1];
+                window.abrirModal(baseParaModal, dataSelecionada, nome, tipoModal);
+            };
+        }
 
         tr.appendChild(td);
     });
@@ -474,18 +499,40 @@ function criarLinha(nome, valores, base, dias, isPercentual = false, isTotalOuTr
     return tr;
 }
 
-function criarLinhaPercentual(nome, valores, tipo) {
+function criarLinhaPercentual(nome, valores, tipo, dias = []) {
     const tr = document.createElement('tr');
     
     const tdNome = document.createElement('td');
     tdNome.textContent = nome;
     tr.appendChild(tdNome);
     
-    valores.forEach((v) => {
+    valores.forEach((v, i) => {
         const td = document.createElement('td');
         td.style.padding = '0';
         td.style.position = 'relative';
-        
+
+        // 🔎 Segurança total aqui
+        const dataColuna = (i === 0 || !dias || !dias[i - 1]) ? null : dias[i - 1];
+
+        // 🧠 Verifica se é futura
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        let futura = false;
+        if (dataColuna) {
+            const d = new Date(dataColuna);
+            d.setHours(0, 0, 0, 0);
+            futura = d > hoje;
+        }
+
+        // 🚫 Se for futura → célula vazia
+        if (futura) {
+            td.style.backgroundColor = '#f5f5f5';
+            td.style.opacity = '0.6';
+            tr.appendChild(td);
+            return;
+        }
+
         const wrapper = document.createElement('div');
         wrapper.className = 'percent-wrapper';
         wrapper.style.position = 'relative';
@@ -521,6 +568,16 @@ function criarLinhaPercentual(nome, valores, tipo) {
     });
     
     return tr;
+}
+
+function ehDataFutura(data) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const d = new Date(data);
+    d.setHours(0, 0, 0, 0);
+
+    return d > hoje;
 }
 
 // ================================================
@@ -563,8 +620,8 @@ function criarBloco(nomeGrupo, dados, dias) {
 
     // PERCENTUAIS COM BARRAS
     const perc = calcularPercentual(dados, dias);
-    const linhaPercPend = criarLinhaPercentual('% Pendente', perc.pend, 'danger');
-    const linhaPercConc = criarLinhaPercentual('% Concluído', perc.conc, 'success');
+    const linhaPercPend = criarLinhaPercentual('% Pendente', perc.pend, 'danger', dias);
+    const linhaPercConc = criarLinhaPercentual('% Pendente', perc.conc, 'success', dias);
     tbody.appendChild(linhaPercPend);
     tbody.appendChild(linhaPercConc);
 
@@ -606,8 +663,8 @@ function criarBloco(nomeGrupo, dados, dias) {
                 const linhas = [
                     criarLinha('Doc Pendente', doc, base, dias, false, false, 'doc'),
                     criarLinha('Pendência OP', op, base, dias, false, false, 'op'),
-                    criarLinhaPercentual('% Pendente', percTrib.pend, 'danger'),
-                    criarLinhaPercentual('% Concluído', percTrib.conc, 'success')
+                    criarLinhaPercentual('% Pendente', percTrib.pend, 'danger', dias),
+                    criarLinhaPercentual('% Concluído', percTrib.conc, 'success', dias)
                 ];
 
                 let referencia = linhaTrib;
