@@ -26,7 +26,7 @@ body {
    CORES PRINCIPAIS (Variáveis)
    ================================================ */
 :root {
-    --primary-dark: #153D64;
+    --primary-dark: #144274;
     --primary-medium: #215C98;
     --primary-light: #eef3fc;
     --danger: #FF3F3F;
@@ -187,7 +187,7 @@ body {
     text-align: center;
     font-weight: 600;
     white-space: nowrap;
-    font-size: 0.85em;
+    font-size: 0.95em;
     border: 1px solid #000000;
     letter-spacing: 0.3px;
 }
@@ -222,7 +222,7 @@ body {
 
 /* Hover suave nas linhas */
 .dashboard-table tr:hover td {
-    background: #fafcff;
+    background: #e8eff8;
 }
 
 /* ================================================
@@ -242,7 +242,7 @@ body {
 }
 
 .linha-total:hover td {
-    background: #1e5288 !important;
+    background: #144274 !important;
 }
 
 .linha-total .clickable {
@@ -253,10 +253,6 @@ body {
 
 .linha-total .clickable:hover {
     background: transparent !important;
-    text-decoration: underline !important;
-    text-decoration-style: solid !important;
-    text-decoration-color: white !important;
-    text-underline-offset: 3px;
 }
 
 /* ================================================
@@ -276,7 +272,7 @@ body {
 }
 
 .linha-tributacao:hover td {
-    background: #1e5288 !important;
+    background: #144274 !important;
 }
 
 .linha-tributacao .clickable {
@@ -287,10 +283,6 @@ body {
 
 .linha-tributacao .clickable:hover {
     background: transparent !important;
-    text-decoration: underline !important;
-    text-decoration-style: solid !important;
-    text-decoration-color: white !important;
-    text-underline-offset: 3px;
 }
 
 /* ================================================
@@ -306,15 +298,10 @@ body {
 .clickable {
     cursor: pointer;
     transition: all 0.15s ease;
-    text-decoration: underline !important;
-    text-decoration-style: solid !important;
-    text-decoration-color: #cbd5e1 !important;
-    text-underline-offset: 3px;
 }
 
 .clickable:hover {
     color: var(--primary-dark) !important;
-    text-decoration-color: var(--primary-medium) !important;
 }
 
 /* ================================================
@@ -349,17 +336,17 @@ body {
 
 /* Gradiente Vermelho #FF3F3F 80% para branco */
 .bar-danger {
-    background: linear-gradient(90deg, #FF3F3F 80%, #ffffff 100%);
+    background: linear-gradient(90deg, #FF3F3F 80%, #eea9a9 100%);
 }
 
 /* Gradiente Verde #8ED973 80% para branco */
 .bar-success {
-    background: linear-gradient(90deg, #8ED973 80%, #ffffff 100%);
+    background: linear-gradient(90deg, #8ED973 80%, #c2f3b0 100%);
 }
 
 /* Esconde a borda da célula de percentual para a barra ficar contínua */
 .dashboard-table td:has(.percent-wrapper) {
-    padding: 0 !important;
+    padding: 0px 2px 0px 2px!important;
     position: relative;
 }
 

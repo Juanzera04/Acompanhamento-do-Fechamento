@@ -492,8 +492,7 @@ function criarLinhaPercentual(nome, valores, tipo) {
         wrapper.style.display = 'flex';
         wrapper.style.alignItems = 'center';
         wrapper.style.justifyContent = 'flex-end';
-        wrapper.style.padding = '10px 16px';
-        wrapper.style.minHeight = '60px';
+        wrapper.style.minHeight = '40px';
         
         const barBg = document.createElement('div');
         barBg.className = `percent-bar-bg ${tipo === 'danger' ? 'bar-danger' : 'bar-success'}`;
@@ -503,7 +502,7 @@ function criarLinhaPercentual(nome, valores, tipo) {
         barBg.style.top = '50%';
         barBg.style.transform = 'translateY(-50%)';
         barBg.style.left = '0';
-        barBg.style.height = '40px';
+        barBg.style.height = '35px';
         barBg.style.borderRadius = '3px';
         
         const valueSpan = document.createElement('span');
