@@ -16,7 +16,7 @@ const MAPA_UNIDADE = {
     "SP": "SP",
     "RJ": "RJ",
     "Santos": "Santos",
-    "Goias": "Goias"
+    "Goias": "GOIAS"
 };
 
 // ================================================
