@@ -403,11 +403,11 @@ body {
 }
 
 .modal-content {
-    background: white;
+    background: rgb(255, 255, 255);
     margin: 50px auto;
-    width: 90%;
-    max-width: 1200px;
-    max-height: 85vh;
+    width: 100%;
+    max-width: 1300px;
+    max-height: 90vh;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -417,7 +417,7 @@ body {
 }
 
 .modal-header {
-    padding: 16px 24px;
+    padding: 5px;
     border-bottom: 1px solid #000000;
     display: flex;
     justify-content: space-between;
@@ -447,6 +447,7 @@ body {
 .close-modal:hover {
     opacity: 1;
     transform: scale(1.05);
+    color: rgb(255, 0, 0);
 }
 
 .modal-body {
@@ -467,14 +468,14 @@ body {
 }
 
 #modalTable th {
-    background: #f8fafc;
-    color: #000000;
+    background: var(--primary-medium);
+    color: #ffffff;
     padding: 12px 14px;
     text-align: left;
-    font-weight: 800;
+    font-weight: 700;
     border-bottom: 1px solid #000000;
     border-right: 1px solid #000000;
-    font-size: 0.9em;
+    font-size: 1.1em;
 }
 
 #modalTable th:last-child {
@@ -482,10 +483,11 @@ body {
 }
 
 #modalTable td {
-    padding: 10px 14px;
+    padding: 5px 10px;
     border-bottom: 1px solid #000000;
     border-right: 1px solid #000000;
-    color: #1e293b;
+    color: #000000;
+    font-weight: 500;
 }
 
 #modalTable td:last-child {
@@ -494,6 +496,7 @@ body {
 
 #modalTable tbody tr:hover td {
     background: var(--primary-light);
+    font-weight: 700;
 }
 
 /* ================================================

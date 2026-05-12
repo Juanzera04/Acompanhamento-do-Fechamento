@@ -132,6 +132,7 @@ function normalizar(dados) {
             else if (key.includes('grupo')) n.Grupo = r[k];
             else if (key.includes('gerente')) n.Gerente = r[k];
             else if (key.includes('equipe')) n.EquipeAtendimento = r[k];
+            else if (key.includes('coordenação')) n.Coordenacao = r[k];
         });
 
         return n;
@@ -263,7 +264,7 @@ function renderModalTable(dataList) {
     
     if (dataList.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="7" style="text-align: center; padding: 40px;">Nenhuma pendência encontrada</td>';
+        tr.innerHTML = '<td colspan="7" style="text-align: center; padding: 10px;">Nenhuma pendência encontrada</td>';
         tbody.appendChild(tr);
         return;
     }
@@ -281,6 +282,8 @@ function renderModalTable(dataList) {
             <td>${r.EquipeAtendimento || '-'}</td>
             <td>${r.Segmento || '-'}</td>
             <td>${r.DocumentacaoPendente || '-'}</td>
+            <td>${r.Coordenacao || '-'}</td>
+
         `;
         tbody.appendChild(tr);
     });
@@ -330,7 +333,7 @@ function abrirModal(base, data, contexto = '', tipoFiltro = 'all') {
     // Atualiza título do modal baseado no filtro
     const modalTitle = document.querySelector('#modal .modal-header h2');
     if (modalTitle) {
-        let titleText = '📋 Detalhe das Pendências';
+        let titleText = 'Detalhe das Pendências';
         if (tipoFiltro === 'doc') titleText = 'Pendências de Documentação';
         if (tipoFiltro === 'op') titleText = 'Pendências de Operação';
         modalTitle.textContent = titleText;
@@ -397,21 +400,122 @@ function exportToExcel() {
         'Grupo': r.Grupo || '-',
         'Gerente': r.Gerente || '-',
         'Tributação': r.Tributacao || '-',
-        'Equipe': r.EquipeAtendimento || '-',
+        'Responsavel': r.EquipeAtendimento || '-',
         'Segmento': r.Segmento || '-',
+        'Coordenação': r.Coordenacao || '-',
         'Data Importação': r.DataImportacao ? formatarData(extrairData(r.DataImportacao)) : '-',
-        'Documentação': r.Documentacao || '-',
-        'Status DOC': r.Documentacao === 'Recebida' ? 'Recebida' : 'Pendente'
+        'Status DOC': r.Documentacao === 'Recebida' ? 'Recebida' : 'Pendente',
+        'Documentação': r.DocumentacaoPendente || '-',
     }));
     
     const ws = XLSX.utils.json_to_sheet(exportData);
+
+    // ============================================
+    // DEFINE RANGE DA TABELA
+    // ============================================
+    const range = XLSX.utils.decode_range(ws['!ref']);
+
+    // ============================================
+    // AUTOFILTER
+    // ============================================
+    ws['!autofilter'] = {
+        ref: ws['!ref']
+    };
+
+    // ============================================
+    // CONGELAR CABEÇALHO
+    // ============================================
+    ws['!freeze'] = {
+        xSplit: 0,
+        ySplit: 1
+    };
+
+    // ============================================
+    // ESTILIZA CABEÇALHO
+    // ============================================
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+
+        if (!ws[cellAddress]) continue;
+
+        ws[cellAddress].s = {
+            font: {
+                bold: true,
+                color: { rgb: "FFFFFF" }
+            },
+            fill: {
+                fgColor: { rgb: "4472C4" }
+            },
+            alignment: {
+                horizontal: "left",
+                vertical: "center"
+            }
+        };
+    }
+
+    // ============================================
+    // ESTILIZA LINHAS (EFEITO ZEBRADO)
+    // ============================================
+    for (let R = 1; R <= range.e.r; ++R) {
+
+        // alterna cor da linha
+        const ehPar = R % 2 === 0;
+
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+
+            const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+
+            if (!ws[cellAddress]) continue;
+
+            ws[cellAddress].s = {
+                fill: {
+                    fgColor: {
+                        rgb: ehPar ? "83CCEB" : "C0E6F5"
+                    }
+                },
+
+                alignment: {
+                    horizontal: "left",
+                    vertical: "center",
+                    wrapText: true
+                },
+
+                border: {
+                    top: {
+                        style: "thin",
+                        color: { rgb: "D0D0D0" }
+                    },
+                    bottom: {
+                        style: "thin",
+                        color: { rgb: "D0D0D0" }
+                    },
+                    left: {
+                        style: "thin",
+                        color: { rgb: "D0D0D0" }
+                    },
+                    right: {
+                        style: "thin",
+                        color: { rgb: "D0D0D0" }
+                    }
+                }
+            };
+        }
+    }
+
     const colWidths = [
-        {wch:12}, {wch:30}, {wch:15}, {wch:15}, {wch:15}, {wch:15}, {wch:12}, {wch:15}, {wch:12}, {wch:12}
+        {wch:12}, {wch:49}, {wch:18}, {wch:16}, {wch:16}, {wch:17}, {wch:12}, {wch:20}, {wch:12}, {wch:17}, {wch:25}
     ];
     ws['!cols'] = colWidths;
-    
+
+    // ============================================
+    // ALTURA DAS LINHAS
+    // ============================================
+    ws['!rows'] = Array(exportData.length + 1).fill({
+        hpt: 15
+    });
+        
     const wb = XLSX.utils.book_new();
-    const sheetName = `Pendencias_${currentFilterType}_${new Date().toISOString().slice(0,19)}`;
+    const sheetName = `Pendencias`;
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
     
     XLSX.writeFile(wb, `pendencias_${currentFilterType}_${currentFilterDate ? formatarData(currentFilterDate) : 'inicio'}.xlsx`);
