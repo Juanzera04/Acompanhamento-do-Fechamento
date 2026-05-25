@@ -180,22 +180,31 @@ function calcularEvolucao(base, dias, campo) {
 }
 
 function calcularDocumentacao(base, dias) {
-    // Filtra apenas tarefas com Documentação NÃO "Recebida"
-    const baseComDocPendente = base.filter(r => {
+    const dataInicio = dias[0]; // primeiro dia do calendário
+
+    // Total inicial: pendentes + quem recebeu DENTRO do período (após início)
+    const total = base.filter(r => {
         const status = String(r.Documentacao || '').trim().toLowerCase();
-        return status !== 'recebida';
-    });
-    
-    const total = baseComDocPendente.length;
-    let pendente = total;
+        
+        // Nunca recebeu → sempre pendente
+        if (status !== 'recebida') return true;
+        
+        // Recebeu DEPOIS do início do calendário → conta como pendente no início
+        const dataDoc = extrairData(r.DataDocumentacao);
+        return dataDoc && dataDoc >= dataInicio;
+    }).length;
+
     const resultado = [total];
 
     dias.forEach(dia => {
-        const baixados = baseComDocPendente.filter(r => {
-            const data = extrairData(r.DataDocumentacao);
-            return data && isMesmaData(data, dia);
+        // Conta quem recebeu ATÉ este dia (dentro do período)
+        const recebidosAteODia = base.filter(r => {
+            const status = String(r.Documentacao || '').trim().toLowerCase();
+            const dataDoc = extrairData(r.DataDocumentacao);
+            return status === 'recebida' && dataDoc && dataDoc >= dataInicio && dataDoc <= dia;
         }).length;
-        pendente -= baixados;
+
+        let pendente = total - recebidosAteODia;
         if (pendente < 0) pendente = 0;
         resultado.push(pendente);
     });

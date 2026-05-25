@@ -83,24 +83,13 @@ df_radar["StatusDocumentacao"] = df_radar["IdCliente"].map(
 # ==========================================
 # 🔹 2. DATA DOCUMENTAÇÃO
 # ===============================
-# Pega a maior data de baixa por cliente (mais recente)
 data_map = df_retorno.groupby("CodCliente")["DataBaixa"].max().to_dict()
 
 df_radar["DataDocumentacao"] = df_radar["IdCliente"].map(data_map)
 
-# Converte para string no formato brasileiro
+# ✅ Apenas UMA conversão, com dayfirst=True para garantir leitura correta
 df_radar["DataDocumentacao"] = pd.to_datetime(
-    df_radar["DataDocumentacao"], errors="coerce"
-).dt.strftime("%d/%m/%Y %H:%M:%S")
-
-# Converte para string no formato brasileiro
-df_radar["DataDocumentacao"] = pd.to_datetime(
-    df_radar["DataDocumentacao"], errors="coerce"
-).dt.strftime("%d/%m/%Y %H:%M:%S")
-
-# ✅ Adicione essa linha abaixo:
-df_radar["DataImportacao"] = pd.to_datetime(
-    df_radar["DataImportacao"], errors="coerce"
+    df_radar["DataDocumentacao"], errors="coerce", dayfirst=True
 ).dt.strftime("%d/%m/%Y %H:%M:%S")
 
 # ==========================================
