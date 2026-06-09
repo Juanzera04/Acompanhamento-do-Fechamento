@@ -33,7 +33,7 @@ let currentContexto = '';
 function getDiasUteisAbril2026() {
     const dias = [];
     for (let i = 1; i <= 30; i++) {
-        const d = new Date(2026, 4, i);
+        const d = new Date(2026, 5, i);
         if (d.getDay() !== 0 && d.getDay() !== 6) dias.push(d);
     }
     return dias;
